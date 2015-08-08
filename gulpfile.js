@@ -2,7 +2,7 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 var runSequence = require('run-sequence');
 var path = require('path');
-var rimraf = require('gulp-rimraf');
+var del = require('del');
 var webpack = require('webpack');
 var livereload = require('gulp-livereload');
 
@@ -52,11 +52,7 @@ gulp.task('copy-web', function(callback) {
 });
 
 gulp.task('clean-dist', function(callback) {
-  gulp.src('dist/**/*', {
-      read: false
-    })
-    .pipe(rimraf());
-  callback();
+  del('dist', callback);
 });
 
 gulp.task('compile-webpack', function(callback) {
