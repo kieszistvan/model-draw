@@ -1,16 +1,14 @@
-MAINTAINER Istvan Kiesz <istvan.kiesz@gmail.com>
-
 FROM node:0.12-wheezy
+
+MAINTAINER Istvan Kiesz <istvan.kiesz@gmail.com>
 
 ENV PORT 3000
 
 EXPOSE 3000
 
-ADD ./dist /app
+ADD . /app
 
 WORKDIR /app
-
-RUN npm install
 
 RUN npm run-script gulp
 
