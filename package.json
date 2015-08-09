@@ -5,8 +5,12 @@
   "main": "dist/server/index.js",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "gulp": "node_modules/.bin/gulp",
     "start": "node dist/server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://kieszistvan@github.com/kieszistvan/model-draw.git"
   },
   "author": "Istvan Kiesz",
   "license": "MIT",
