@@ -59,7 +59,7 @@ gulp.task('compile-webpack', function(callback) {
   webpack({
     entry: {
       app: './web/index.js',
-      vendor: ['jquery']
+      vendor: ['jquery', 'raphael/dev']
     },
     output: {
       path: path.join(__dirname, 'dist'),
@@ -67,11 +67,10 @@ gulp.task('compile-webpack', function(callback) {
     },
     plugins: [
       new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
-      new webpack.optimize.UglifyJsPlugin(),
+      //      new webpack.optimize.UglifyJsPlugin(),
       new webpack.optimize.OccurenceOrderPlugin(),
       new webpack.ProvidePlugin({
-        $: 'jquery',
-        regeneratorRuntime: 'regenerator/runtime'
+        regeneratorRuntime: 'regenerator/runtime',
       }),
       new webpack.SourceMapDevToolPlugin({
         filename: 'bundle.map.js'
