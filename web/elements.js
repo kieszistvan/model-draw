@@ -12,72 +12,71 @@ const boxHeaderColor = '#333';
 const inputCircleColor = '#000462';
 const outputCircleColor = '#9c0013';
 
+const headerPlacementRules = {
+  x(x) {
+      return x + (rectWidth / 2);
+    },
+    y(y) {
+      return y + 10;
+    }
+};
+
+const inputCirclePlacementRules = {
+  x(x) {
+      return x + circleOffset;
+    },
+    y(y) {
+      return y + (rectHeight / 2);
+    }
+};
+
+const outputCirclePlacementRules = {
+  x(x) {
+      return x + rectWidth - circleOffset;
+    },
+    y(y) {
+      return y + (rectHeight / 2);
+    }
+};
+
+const createBoxInfoObject = function createBoxInfoObject(box, inputCircle, outputCircle) {
+  return {
+    box: {
+      oid: box.oid,
+      x: box.attr('x'),
+      y: box.attr('y')
+    },
+    input: {
+      oid: inputCircle.oid,
+      x: inputCircle.attr('cx'),
+      y: inputCircle.attr('cy')
+    },
+    output: {
+      oid: outputCircle.oid,
+      x: outputCircle.attr('cx'),
+      y: outputCircle.attr('cy')
+    }
+  };
+};
+
+const setNewIdForElement = function setNewIdForElement(element) {
+  element.oid = shortid.generate();
+};
 
 export function createBox(paper, x, y, headLine) {
 
-  const headerPlacementRules = {
-    x(x) {
-        return x + (rectWidth / 2);
-      },
-      y(y) {
-        return y + 10;
-      }
-  };
-
-  const inputCirclePlacementRules = {
-    x(x) {
-        return x + circleOffset;
-      },
-      y(y) {
-        return y + (rectHeight / 2);
-      }
-  };
-
-  const outputCirclePlacementRules = {
-    x(x) {
-        return x + rectWidth - circleOffset;
-      },
-      y(y) {
-        return y + (rectHeight / 2);
-      }
-  };
-
-  const createBoxInfoObject = function createBoxInfoObject(box, inputCircle, outputCircle) {
-    return {
-      box: {
-        oid: box.oid,
-        x: box.attr('x'),
-        y: box.attr('y')
-      },
-      input: {
-        oid: inputCircle.oid,
-        x: inputCircle.attr('cx'),
-        y: inputCircle.attr('cy')
-      },
-      output: {
-        oid: outputCircle.oid,
-        x: outputCircle.attr('cx'),
-        y: outputCircle.attr('cy')
-      }
-    };
-  };
-
-  const setNewIdForElement = function setNewIdForElement(element) {
-    element.oid = shortid.generate();
-  };
-
-  const boxHeader = paper.text(headerPlacementRules.x(x), headerPlacementRules.y(y), headLine).attr({
+  let boxHeader = paper.text(headerPlacementRules.x(x), headerPlacementRules.y(y), headLine).attr({
     fill: boxHeaderColor
   });
 
-  const inputCircle = paper.circle(inputCirclePlacementRules.x(x), inputCirclePlacementRules.y(y), circleRadius)
+  let inputCircle = paper.circle(inputCirclePlacementRules.x(x), inputCirclePlacementRules.y(y), circleRadius)
     .attr({
       fill: inputCircleColor,
       ['stroke-width']: 0
     });
   setNewIdForElement(inputCircle);
 
-  const outputCircle = paper.circle(outputCirclePlacementRules.x(x), outputCirclePlacementRules.y(y), circleRadius)
+  let outputCircle = paper.circle(outputCirclePlacementRules.x(x), outputCirclePlacementRules.y(y), circleRadius)
     .attr({
       fill: outputCircleColor,
       ['stroke-width']: 0

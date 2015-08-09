@@ -1,7 +1,7 @@
 {
-  "name": "gew-template",
-  "version": "1.0.0",
-  "description": "Project orchestration template using Gulp, ES6 and Webpack",
+  "name": "model-draw",
+  "version": "0.1.0",
+  "description": "Basic modeller view",
   "main": "index.js",
   "private": true,
   "scripts": {
