@@ -1,0 +1,16 @@
+source:
+  image: ubuntu
+  volumes:
+   - dist:/app
+   - node_modules:/app/node_modules
+  read_only: true
+node:
+  image: node:0.12-wheezy
+  volumes_from:
+   - source
+  environment:
+    PORT: 3000
+  ports:
+   - "3000:3000"
+  working_dir: /app
+  command: node server/index.js

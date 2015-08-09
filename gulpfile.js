@@ -5,19 +5,16 @@ var path = require('path');
 var del = require('del');
 var webpack = require('webpack');
 var livereload = require('gulp-livereload');
+var babel = require('gulp-babel');
 
 gulp.task('default', ['build']);
 
 gulp.task('build', function(callback) {
-  runSequence('build-web', 'build-server', callback);
+  runSequence(['build-web', 'build-server'], callback);
 });
 
 gulp.task('watch', function(callback) {
   runSequence('watch-server', 'watch-web', callback);
-});
-
-gulp.task('watch-server', function(callback) {
-  callback();
 });
 
 gulp.task('watch-web', function(callback) {
@@ -31,16 +28,12 @@ gulp.task('watch-web', function(callback) {
   callback();
 });
 
-gulp.task('build-server', function(callback) {
-  callback();
-});
-
 gulp.task('build-web', function(callback) {
   runSequence('clean-web', 'compile-web', 'copy-web', callback);
 });
 
 gulp.task('clean-web', function(callback) {
-  runSequence('clean-dist', callback);
+  del('dist/web', callback);
 });
 
 gulp.task('compile-web', function(callback) {
@@ -48,11 +41,9 @@ gulp.task('compile-web', function(callback) {
 });
 
 gulp.task('copy-web', function(callback) {
-  runSequence('copy-static', callback);
-});
-
-gulp.task('clean-dist', function(callback) {
-  del('dist', callback);
+  gulp.src('web/**/*.html')
+    .pipe(gulp.dest('dist/web'));
+  callback();
 });
 
 gulp.task('compile-webpack', function(callback) {
@@ -62,7 +53,7 @@ gulp.task('compile-webpack', function(callback) {
       vendor: ['jquery', 'raphael/dev', 'radio', 'shortid']
     },
     output: {
-      path: path.join(__dirname, 'dist'),
+      path: path.join(__dirname, 'dist/web/lib'),
       filename: 'bundle.js'
     },
     plugins: [
@@ -92,8 +83,21 @@ gulp.task('compile-webpack', function(callback) {
   });
 });
 
-gulp.task('copy-static', function(callback) {
-  gulp.src('web/**/*.html')
-    .pipe(gulp.dest('dist/'));
+gulp.task('watch-server', function(callback) {
+  gulp.watch(['server/**/*'], ['build-server']);
   callback();
+});
+
+gulp.task('build-server', function(callback) {
+  runSequence('clean-server', 'compile-server', callback);
+});
+
+gulp.task('clean-server', function(callback) {
+  del('dist/server', callback);
+});
+
+gulp.task('compile-server', function(callback) {
+  return gulp.src('server/index.js')
+    .pipe(babel())
+    .pipe(gulp.dest('dist/server'));
 });
