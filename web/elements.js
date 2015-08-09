@@ -1,11 +1,19 @@
+import radio from 'radio';
+import shortid from 'shortid';
+
+const rectWidth = 200;
+const rectHeight = 100;
+const rectR = 2;
+const circleRadius = 20;
+const circleOffset = 5;
+const boxColor = '#fff';
+const boxStrokeColor = '#333';
+const boxHeaderColor = '#333';
+const inputCircleColor = '#000462';
+const outputCircleColor = '#9c0013';
+
+
 export function createBox(paper, x, y, headLine) {
-  const rectWidth = 200;
-  const rectHeight = 100;
-  const rectR = 2;
-  const circleRadius = 20;
-  const circleOffset = 5;
-  const inputCircleColor = '#000462';
-  const outputCircleColor = '#9c0013';
 
   const headerPlacementRules = {
     x(x) {
@@ -34,21 +42,47 @@ export function createBox(paper, x, y, headLine) {
       }
   };
 
-  let boxHeader = paper.text(headerPlacementRules.x(x), headerPlacementRules.y(y), headLine).attr({
-    fill: '#fff'
+  const createBoxInfoObject = function createBoxInfoObject(box, inputCircle, outputCircle) {
+    return {
+      box: {
+        oid: box.oid,
+        x: box.attr('x'),
+        y: box.attr('y')
+      },
+      input: {
+        oid: inputCircle.oid,
+        x: inputCircle.attr('cx'),
+        y: inputCircle.attr('cy')
+      },
+      output: {
+        oid: outputCircle.oid,
+        x: outputCircle.attr('cx'),
+        y: outputCircle.attr('cy')
+      }
+    };
+  };
+
+  const setNewIdForElement = function setNewIdForElement(element) {
+    element.oid = shortid.generate();
+  };
+
+  const boxHeader = paper.text(headerPlacementRules.x(x), headerPlacementRules.y(y), headLine).attr({
+    fill: boxHeaderColor
   });
 
-  let inputCircle = paper.circle(inputCirclePlacementRules.x(x), inputCirclePlacementRules.y(y), circleRadius)
+  const inputCircle = paper.circle(inputCirclePlacementRules.x(x), inputCirclePlacementRules.y(y), circleRadius)
     .attr({
       fill: inputCircleColor,
       ['stroke-width']: 0
     });
+  setNewIdForElement(inputCircle);
 
-  let outputCircle = paper.circle(outputCirclePlacementRules.x(x), outputCirclePlacementRules.y(y), circleRadius)
+  const outputCircle = paper.circle(outputCirclePlacementRules.x(x), outputCirclePlacementRules.y(y), circleRadius)
     .attr({
       fill: outputCircleColor,
       ['stroke-width']: 0
     });
+  setNewIdForElement(outputCircle);
 
   const dragStart = function dragStart(x, y, event) {
     this.ox = this.attr('x');
@@ -78,26 +112,27 @@ export function createBox(paper, x, y, headLine) {
       cx: outputCirclePlacementRules.x(currX),
       cy: outputCirclePlacementRules.y(currY)
     });
+
+    radio('boxMoved').broadcast(createBoxInfoObject(this, inputCircle, outputCircle));
   };
 
-  const changeCursorStyle = function changeCursorStyle() {
+  const flipCursorStyle = function flipCursorStyle() {
     const currentCursor = this.attr('cursor');
     this.attr('cursor', currentCursor === 'move' ? 'auto' : 'move');
   };
 
-  let box = paper.rect(x, y, rectWidth, rectHeight, rectR)
-    .attr({
-      fill: '#333',
+  let box = paper.rect(x, y, rectWidth, rectHeight, rectR).attr({
+      fill: boxColor,
       title: headLine || '',
-      ['stroke-width']: 0
+      stroke: boxStrokeColor,
+      ['stroke-width']: 1
     })
     .drag(drag, dragStart)
-    .mousedown(changeCursorStyle)
-    .mouseup(changeCursorStyle);
+    .mousedown(flipCursorStyle)
+    .mouseup(flipCursorStyle);
+  setNewIdForElement(box);
 
   boxHeader.toFront();
-}
 
-export function createConnection(elem1, elem2) {
-
+  return createBoxInfoObject(box, inputCircle, outputCircle);
 }

@@ -59,7 +59,7 @@ gulp.task('compile-webpack', function(callback) {
   webpack({
     entry: {
       app: './web/index.js',
-      vendor: ['jquery', 'raphael/dev']
+      vendor: ['jquery', 'raphael/dev', 'radio', 'shortid']
     },
     output: {
       path: path.join(__dirname, 'dist'),

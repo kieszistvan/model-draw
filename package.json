@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "jquery": "^2.1.4",
+    "radio": "^0.2.0",
     "raphael": "^2.1.4",
-    "regenerator": "^0.8.36"
+    "regenerator": "^0.8.36",
+    "shortid": "^2.2.2"
   }
 }
