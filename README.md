@@ -1,3 +1,5 @@
+[ ![Codeship Status for kieszistvan/model-draw](https://codeship.com/projects/5e0bd960-20c7-0133-3e08-5ae45cb2c8e5/status?branch=master)](https://codeship.com/projects/95724)
+
 # model-draw
 Basic graphical interface for model designer project
 
