@@ -1,6 +1,8 @@
 import radio from 'radio';
 import shortid from 'shortid';
-import * as ports from './ports';
+import Port from './Port';
+import * as PortType from './PortType';
+import OperatorEventHandler from './OperatorEventHandler';
 
 const portOffset = 30;
 
@@ -42,38 +44,6 @@ const outputCirclePlacementRules = {
     }
 };
 
-const createOperatorInfoObject = function createOperatorInfoObject(operator) {
-  let inputPort;
-
-  if (operator.inputPort) {
-    inputPort = {
-      oid: operator.inputPort.oid,
-      x: operator.inputPort.attr('cx'),
-      y: operator.inputPort.attr('cy')
-    };
-  }
-
-  let outputPorts = [];
-  operator.outputPorts.forEach(function(outputPort) {
-    outputPorts.push({
-      oid: outputPort.oid,
-      x: outputPort.attr('cx'),
-      y: outputPort.attr('cy')
-    });
-  });
-
-  return {
-    box: {
-      oid: operator.box.oid,
-      x: operator.box.attr('x'),
-      y: operator.box.attr('y')
-    },
-    inputPort,
-    outputPorts
-  };
-
-};
-
 const setOidForElement = function setNewIdForElement(element) {
   element.oid = shortid.generate();
 };
@@ -83,9 +53,9 @@ const flipCursorStyle = function flipCursorStyle() {
   this.attr('cursor', currentCursor === 'move' ? 'auto' : 'move');
 };
 
-export function createOperator(paper, x, y, headLine) {
-
-  const Operator = function Operator(x, y, headLine) {
+export default class Operator {
+  constructor(paper, x, y, headLine) {
+    this.paper = paper;
     this.headLine = headLine;
     this.inputPort = null;
     this.outputPorts = [];
@@ -105,56 +75,13 @@ export function createOperator(paper, x, y, headLine) {
 
     this.boxHeader.toFront();
 
-    const dragStart = function dragStart(x, y, event) {
-      this.ox = this.attr('x');
-      this.oy = this.attr('y');
-    };
-
-    let that = this;
-    const dragging = function dragging(dx, dy, x, y, event) {
-      this.attr({
-        x: (this.ox + dx),
-        y: (this.oy + dy)
-      });
-
-      let currX = this.attr('x');
-      let currY = this.attr('y');
-
-      if (that.boxHeader) {
-        that.boxHeader.attr({
-          x: headerPlacementRules.x(currX),
-          y: headerPlacementRules.y(currY)
-        });
-      }
-
-      if (that.inputPort) {
-        that.inputPort.attr({
-          cx: inputCirclePlacementRules.x(currX),
-          cy: inputCirclePlacementRules.y(currY)
-        });
-      }
-
-      if (that.outputPorts.length) {
-        for (let i = 0; i < that.outputPorts.length; i++) {
-          let outputPort = that.outputPorts[i];
-          outputPort.attr({
-            cx: outputCirclePlacementRules.x(currX),
-            cy: outputCirclePlacementRules.y(currY, i)
-          });
-        }
-      }
-
-      radio('operatorMoved').broadcast(createOperatorInfoObject(that));
-    };
-
-
-    this.box.drag(dragging, dragStart);
-  };
-
-  Operator.prototype.addPort = function(type) {
+    this.dragEventHandler = new OperatorEventHandler(this);
+    this.box.drag(this.dragEventHandler.getDraggingEventHandler(), this.dragEventHandler.getDragStartEventHandler());
+  }
+  addPort(type) {
     let [boxX, boxY] = [this.box.attr('x'), this.box.attr('y')];
 
-    if (type === ports.portType.output) {
+    if (type === PortType.output) {
       let currNumOfOutputPorts = this.outputPorts.length;
 
       this.box.attr('height', rectHeight + (circleOffset * currNumOfOutputPorts));
@@ -162,12 +89,12 @@ export function createOperator(paper, x, y, headLine) {
       let portX = outputCirclePlacementRules.x(boxX);
       let portY = outputCirclePlacementRules.y(boxY, currNumOfOutputPorts);
 
-      let port = ports.createPort(paper, portX, portY, circleRadius, type);
-      port.toBack();
+      let port = new Port(this.paper, portX, portY, circleRadius, type);
       setOidForElement(port);
+      port.circle.toBack();
 
       this.outputPorts.push(port);
-    } else if (type === ports.portType.input) {
+    } else if (type === PortType.input) {
       if (this.inputPort) {
         return;
       }
@@ -175,33 +102,62 @@ export function createOperator(paper, x, y, headLine) {
       let portX = inputCirclePlacementRules.x(boxX);
       let portY = inputCirclePlacementRules.y(boxY);
 
-      this.inputPort = ports.createPort(paper, portX, portY, circleRadius, type);
+      this.inputPort = new Port(this.paper, portX, portY, circleRadius, type);
       setOidForElement(this.inputPort);
-      this.inputPort.toBack();
+      this.inputPort.circle.toBack();
     } else {
       throw new Error('No such port type');
     }
 
     return this;
-  };
+  }
+  getOutputPort(index) {
+    let outputPort = this.outputPorts[index];
+    if (outputPort) {
+      return {
+        oid: outputPort.circle.oid,
+        x: outputPort.circle.attr('cx'),
+        y: outputPort.circle.attr('cy')
+      };
+    }
+  }
+  getInputPort() {
+    if (this.inputPort) {
+      return {
+        oid: this.inputPort.circle.oid,
+        x: this.inputPort.circle.attr('cx'),
+        y: this.inputPort.circle.attr('cy')
+      };
+    }
+  }
+  createPositionInfoObject() {
+    let inputPort;
 
-  Operator.prototype.getOutputPort = function(index) {
-    let port = this.outputPorts[index];
+    if (this.inputPort) {
+      inputPort = {
+        oid: this.inputPort.circle.oid,
+        x: this.inputPort.circle.attr('cx'),
+        y: this.inputPort.circle.attr('cy')
+      };
+    }
+
+    let outputPorts = [];
+    this.outputPorts.forEach(function(outputPort) {
+      outputPorts.push({
+        oid: outputPort.circle.oid,
+        x: outputPort.circle.attr('cx'),
+        y: outputPort.circle.attr('cy')
+      });
+    });
+
     return {
-      oid: port.oid,
-      x: port.attr('cx'),
-      y: port.attr('cy')
+      box: {
+        oid: this.box.oid,
+        x: this.box.attr('x'),
+        y: this.box.attr('y')
+      },
+      inputPort,
+      outputPorts
     };
-  };
-
-  Operator.prototype.getInputPort = function() {
-    let port = this.inputPort;
-    return {
-      oid: port.oid,
-      x: port.attr('cx'),
-      y: port.attr('cy')
-    };
-  };
-
-  return new Operator(x, y, headLine);
+  }
 }
