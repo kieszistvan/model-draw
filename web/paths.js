@@ -6,12 +6,8 @@ export default function Paths(paper) {
   this.connections = {};
 
   const subscribeToBoxMoved = function subscribeToBoxMoved() {
-    radio('boxMoved').subscribe(function boxMoved({
-      box: box,
-      input: input,
-      output: output
-    }) {
-      let updateConnection = function updateConnection(element) {
+    radio('operatorMoved').subscribe(function operatorMoved(operatorInfo) {
+      const updateConnection = function updateConnection(element) {
         let connection = that.connections[element.oid];
         if (connection) {
           connection.line.remove();
@@ -19,8 +15,10 @@ export default function Paths(paper) {
         }
       };
 
-      updateConnection(input);
-      updateConnection(output);
+      updateConnection(operatorInfo.inputPort);
+      operatorInfo.outputPorts.forEach(function(output) {
+        updateConnection(output);
+      });
     });
   };
 
