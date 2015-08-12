@@ -6,29 +6,46 @@ export default class Paths {
     this.paper = paper;
     this.connections = {};
 
-    const subscribeToBoxMoved = function subscribeToBoxMoved() {
-      radio('operatorMoved').subscribe(function operatorMoved(operatorInfo) {
-        const updateConnection = function updateConnection(element) {
-          let elementId = element.oid;
-          if (element.circle) {
-            elementId = element.circle.oid;
-          }
+    radio('operatorMoveStart').subscribe(function() {
+      const connections = this.connections;
 
-          let connection = that.connections[elementId];
-          if (connection) {
-            connection.line.remove();
-            that.connect(element, connection.to);
-          }
-        };
+      for (let oid in connections) {
+        if (connections.hasOwnProperty(oid)) {
+          connections[oid].line.toFront();
+        }
+      }
+    }.bind(this));
 
-        updateConnection(operatorInfo.inputPort);
-        operatorInfo.outputPorts.forEach(function(output) {
-          updateConnection(output);
-        });
+    radio('operatorMoveFinish').subscribe(function() {
+      const connections = this.connections;
+
+      for (let oid in connections) {
+        if (connections.hasOwnProperty(oid)) {
+          connections[oid].line.toBack();
+        }
+      }
+    }.bind(this));
+
+    radio('operatorMove').subscribe(function operatorMoved(operatorInfo) {
+      const updateConnection = function updateConnection(element) {
+        let elementId = element.oid;
+        if (element.circle) {
+          elementId = element.circle.oid;
+        }
+
+        let connection = that.connections[elementId];
+        if (connection) {
+          connection.line.remove();
+          that.connect(element, connection.to);
+        }
+      };
+
+      updateConnection(operatorInfo.inputPort);
+      operatorInfo.outputPorts.forEach(function(output) {
+        updateConnection(output);
       });
-    };
+    });
 
-    subscribeToBoxMoved();
   }
   connect(from, to) {
     let connections = this.connections;

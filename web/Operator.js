@@ -1,7 +1,7 @@
 import radio from 'radio';
 import shortid from 'shortid';
 import Port from './Port';
-import * as PortType from './PortType';
+import PortType from './PortType';
 import OperatorEventHandler from './OperatorEventHandler';
 
 const portOffset = 30;
@@ -84,38 +84,34 @@ export default class Operator {
     this.boxHeader = boxHeader;
     this.dragEventHandler = dragEventHandler;
   }
-  addPort(type) {
+  addPort(port) {
+    let portX, portY;
     const [boxX, boxY] = [this.box.attr('x'), this.box.attr('y')];
 
-    if (type === PortType.output) {
+    if (port.type === PortType.output) {
       const currNumOfOutputPorts = this.outputPorts.length;
 
       this.box.attr('height', rectHeight + (circleOffset * currNumOfOutputPorts));
 
-      const portX = outputCirclePlacementRules.x(boxX);
-      const portY = outputCirclePlacementRules.y(boxY, currNumOfOutputPorts);
-
-      const port = new Port(this.paper, portX, portY, circleRadius, type);
-      setOidForElement(port);
-      port.circle.toBack();
+      portX = outputCirclePlacementRules.x(boxX);
+      portY = outputCirclePlacementRules.y(boxY, currNumOfOutputPorts);
 
       this.outputPorts.push(port);
-    } else if (type === PortType.input) {
+    }
+
+    if (port.type === PortType.input) {
       if (this.inputPort) {
         return;
       }
 
-      const portX = inputCirclePlacementRules.x(boxX);
-      const portY = inputCirclePlacementRules.y(boxY);
+      portX = inputCirclePlacementRules.x(boxX);
+      portY = inputCirclePlacementRules.y(boxY);
 
-      const inputPort = new Port(this.paper, portX, portY, circleRadius, type);
-      setOidForElement(inputPort);
-      inputPort.circle.toBack();
-
-      this.inputPort = inputPort;
-    } else {
-      throw new Error('No such port type');
+      this.inputPort = port;
     }
+
+    port.draw(this.paper, portX, portY, circleRadius);
+    port.circle.toBack();
 
     return this;
   }

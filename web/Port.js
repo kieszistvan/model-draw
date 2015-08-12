@@ -1,13 +1,15 @@
 import shortid from 'shortid';
-import * as PortType from './PortType';
+import PortType from './PortType';
 
 const inputCircleColor = '#000462';
 const outputCircleColor = '#9c0013';
 
 export default class Port {
-  constructor(paper, x, y, radius, type) {
+  constructor(type) {
     this.type = type;
-    let circleColor = (type === PortType.input) ? inputCircleColor : outputCircleColor;
+  }
+  draw(paper, x, y, radius) {
+    let circleColor = (this.type === PortType.input) ? inputCircleColor : outputCircleColor;
     this.circle = paper.circle(x, y, radius)
       .attr({
         fill: circleColor,
@@ -15,8 +17,10 @@ export default class Port {
       });
     this.circle.oid = shortid.generate();
   }
-  getPortType() {
-    return this.type;
+  get type() {
+    return this._type;
   }
-
+  set type(portType) {
+    this._type = portType;
+  }
 }

@@ -30,9 +30,9 @@ const outputCirclePlacementRules = {
     }
 };
 
-const applyAnimate = function(element) {
+const applyAnimate = function(element, dim) {
   element.animate({
-    opacity: 0.25
+    opacity: dim ? 0.25 : 1
   }, 300, ">");
 };
 
@@ -40,9 +40,47 @@ const toFront = function toFront(element) {
   element.toFront();
 };
 
+const toBack = function toFront(element) {
+  element.toFront();
+};
+
+
 export default class OperatorEventHandler {
   constructor(operator) {
     this.operator = operator;
+
+    radio('operatorMoveStart').subscribe(function(operatorInfoObject) {
+      if (operatorInfoObject.box.oid === this.operator.box.oid) {
+        return;
+      }
+
+      applyAnimate(this.operator.box, true);
+      toBack(this.operator.box);
+      applyAnimate(operator.boxHeader, true);
+      toBack(operator.boxHeader);
+
+      toFront(operator.inputPort.circle);
+      if (operator.outputPorts.length) {
+        for (let i = 0; i < operator.outputPorts.length; i++) {
+          const outputPort = operator.outputPorts[i];
+          toFront(outputPort.circle);
+        }
+      }
+
+    }.bind(this));
+
+    radio('operatorMoveFinish').subscribe(function(operatorInfoObject) {
+      if (operatorInfoObject.box.oid === this.operator.box.oid) {
+        return;
+      }
+
+      applyAnimate(this.operator.box);
+      toFront(this.operator.box);
+      applyAnimate(operator.boxHeader);
+      toFront(operator.boxHeader);
+
+    }.bind(this));
+
   }
   getDragStartHandler() {
     var operator = this.operator;
@@ -51,6 +89,19 @@ export default class OperatorEventHandler {
       this.dragStartEventHandler = function(x, y, event) {
         this.ox = this.attr('x');
         this.oy = this.attr('y');
+
+        applyAnimate(this, true);
+        applyAnimate(operator.boxHeader, true);
+
+        toFront(operator.inputPort.circle);
+        if (operator.outputPorts.length) {
+          for (let i = 0; i < operator.outputPorts.length; i++) {
+            const outputPort = operator.outputPorts[i];
+            toFront(outputPort.circle);
+          }
+        }
+
+        radio('operatorMoveStart').broadcast(operator.createPositionInfoObject());
       };
     }
 
@@ -66,8 +117,6 @@ export default class OperatorEventHandler {
           x: (this.ox + dx),
           y: (this.oy + dy)
         });
-        applyAnimate(this);
-        toFront(this);
 
 
         const currX = this.attr('x');
@@ -78,8 +127,6 @@ export default class OperatorEventHandler {
             x: headerPlacementRules.x(currX),
             y: headerPlacementRules.y(currY)
           });
-          applyAnimate(operator.boxHeader);
-          toFront(operator.boxHeader);
         }
 
         if (operator.inputPort) {
@@ -87,8 +134,6 @@ export default class OperatorEventHandler {
             cx: inputCirclePlacementRules.x(currX),
             cy: inputCirclePlacementRules.y(currY)
           });
-          operator.inputPort.circle.toFront();
-          toFront(operator.inputPort.circle);
         }
 
         if (operator.outputPorts.length) {
@@ -98,12 +143,10 @@ export default class OperatorEventHandler {
               cx: outputCirclePlacementRules.x(currX),
               cy: outputCirclePlacementRules.y(currY, i)
             });
-            outputPort.circle.toFront();
-            toFront(outputPort.circle);
           }
         }
 
-        radio('operatorMoved').broadcast(operator.createPositionInfoObject());
+        radio('operatorMove').broadcast(operator.createPositionInfoObject());
       };
     }
 
@@ -114,28 +157,20 @@ export default class OperatorEventHandler {
       const operator = this.operator;
 
       this.dragFinishHandler = function dragFinishHandler() {
-        const applyAnimate = function(element) {
-          element.animate({
-            opacity: 1
-          }, 300, ">");
-        };
-
         applyAnimate(this);
+        toFront(this);
+        applyAnimate(operator.boxHeader);
+        toFront(operator.boxHeader);
 
-        if (operator.boxHeader) {
-          applyAnimate(operator.boxHeader);
-        }
-
-        if (operator.inputPort) {
-          operator.inputPort.circle.insertAfter(this);
-        }
-
+        operator.inputPort.circle.insertBefore(this);
         if (operator.outputPorts.length) {
           for (let i = 0; i < operator.outputPorts.length; i++) {
             const outputPort = operator.outputPorts[i];
-            outputPort.circle.insertAfter(this);
+            outputPort.circle.insertBefore(this);
           }
         }
+
+        radio('operatorMoveFinish').broadcast(operator.createPositionInfoObject());
       };
     }
 

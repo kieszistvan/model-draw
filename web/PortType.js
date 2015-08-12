@@ -1,2 +1,7 @@
-export const input = Symbol('input');
-export const output = Symbol('output');
+const PortType = {
+  input: Symbol('input'),
+  output: Symbol('output')
+};
+
+
+export default PortType;

@@ -1,6 +1,7 @@
 import Raphael from 'raphael/dev';
 
-import * as PortType from './PortType';
+import PortType from './PortType';
+import Port from './Port';
 import Operator from './Operator';
 import Paths from './Paths';
 
@@ -21,27 +22,27 @@ export default class Surface {
   }
   buildDummy() {
     let operator0 = new Operator(this.paper, 50, 200, 'Zapp')
-      .addPort(PortType.input)
-      .addPort(PortType.output);
+      .addPort(new Port(PortType.input))
+      .addPort(new Port(PortType.output));
 
     let operator1 = new Operator(this.paper, 300, 200, 'Bender')
-      .addPort(PortType.input)
-      .addPort(PortType.output)
-      .addPort(PortType.output)
-      .addPort(PortType.output);
+      .addPort(new Port(PortType.input))
+      .addPort(new Port(PortType.output))
+      .addPort(new Port(PortType.output))
+      .addPort(new Port(PortType.output));
 
     let operator2 = new Operator(this.paper, 700, 50, 'Leela')
-      .addPort(PortType.input)
-      .addPort(PortType.output);
+      .addPort(new Port(PortType.input))
+      .addPort(new Port(PortType.output));
 
     let operator3 = new Operator(this.paper, 700, 200, 'Fry')
-      .addPort(PortType.input)
-      .addPort(PortType.output);
+      .addPort(new Port(PortType.input))
+      .addPort(new Port(PortType.output));
 
 
     let operator4 = new Operator(this.paper, 700, 350, 'Kif')
-      .addPort(PortType.input)
-      .addPort(PortType.output);
+      .addPort(new Port(PortType.input))
+      .addPort(new Port(PortType.output));
 
     this.operators.push(operator0, operator1, operator2, operator3, operator4);
 
