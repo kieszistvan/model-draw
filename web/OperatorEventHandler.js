@@ -30,12 +30,23 @@ const outputCirclePlacementRules = {
     }
 };
 
+const applyAnimate = function(element) {
+  element.animate({
+    opacity: 0.25
+  }, 300, ">");
+};
+
+const toFront = function toFront(element) {
+  element.toFront();
+};
 
 export default class OperatorEventHandler {
   constructor(operator) {
     this.operator = operator;
   }
-  getDragStartEventHandler() {
+  getDragStartHandler() {
+    var operator = this.operator;
+
     if (!this.dragStartEventHandler) {
       this.dragStartEventHandler = function(x, y, event) {
         this.ox = this.attr('x');
@@ -46,7 +57,7 @@ export default class OperatorEventHandler {
     return this.dragStartEventHandler;
   }
 
-  getDraggingEventHandler() {
+  getDraggingHandler() {
     var operator = this.operator;
 
     if (!this.draggingEventHandler) {
@@ -55,15 +66,20 @@ export default class OperatorEventHandler {
           x: (this.ox + dx),
           y: (this.oy + dy)
         });
+        applyAnimate(this);
+        toFront(this);
 
-        let currX = this.attr('x');
-        let currY = this.attr('y');
+
+        const currX = this.attr('x');
+        const currY = this.attr('y');
 
         if (operator.boxHeader) {
           operator.boxHeader.attr({
             x: headerPlacementRules.x(currX),
             y: headerPlacementRules.y(currY)
           });
+          applyAnimate(operator.boxHeader);
+          toFront(operator.boxHeader);
         }
 
         if (operator.inputPort) {
@@ -71,15 +87,19 @@ export default class OperatorEventHandler {
             cx: inputCirclePlacementRules.x(currX),
             cy: inputCirclePlacementRules.y(currY)
           });
+          operator.inputPort.circle.toFront();
+          toFront(operator.inputPort.circle);
         }
 
         if (operator.outputPorts.length) {
           for (let i = 0; i < operator.outputPorts.length; i++) {
-            let outputPort = operator.outputPorts[i];
+            const outputPort = operator.outputPorts[i];
             outputPort.circle.attr({
               cx: outputCirclePlacementRules.x(currX),
               cy: outputCirclePlacementRules.y(currY, i)
             });
+            outputPort.circle.toFront();
+            toFront(outputPort.circle);
           }
         }
 
@@ -88,5 +108,37 @@ export default class OperatorEventHandler {
     }
 
     return this.draggingEventHandler;
+  }
+  getDragFinishHandler() {
+    if (!this.dragFinishHandler) {
+      const operator = this.operator;
+
+      this.dragFinishHandler = function dragFinishHandler() {
+        const applyAnimate = function(element) {
+          element.animate({
+            opacity: 1
+          }, 300, ">");
+        };
+
+        applyAnimate(this);
+
+        if (operator.boxHeader) {
+          applyAnimate(operator.boxHeader);
+        }
+
+        if (operator.inputPort) {
+          operator.inputPort.circle.insertAfter(this);
+        }
+
+        if (operator.outputPorts.length) {
+          for (let i = 0; i < operator.outputPorts.length; i++) {
+            const outputPort = operator.outputPorts[i];
+            outputPort.circle.insertAfter(this);
+          }
+        }
+      };
+    }
+
+    return this.dragFinishHandler;
   }
 }

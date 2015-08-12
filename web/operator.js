@@ -60,36 +60,42 @@ export default class Operator {
     this.inputPort = null;
     this.outputPorts = [];
 
-    this.box = paper.rect(x, y, rectWidth, rectHeight, rectR).attr({
+    const box = paper.rect(x, y, rectWidth, rectHeight, rectR).attr({
       fill: boxColor,
       title: headLine || '',
       stroke: boxStrokeColor,
       ['stroke-width']: 1
     });
-    setOidForElement(this.box);
+    setOidForElement(box);
 
-    this.boxHeader = paper.text(headerPlacementRules.x(x), headerPlacementRules.y(y), headLine).attr({
+    const boxHeader = paper.text(headerPlacementRules.x(x), headerPlacementRules.y(y), headLine).attr({
       fill: boxHeaderColor
     });
-    setOidForElement(this.boxHeader);
+    setOidForElement(boxHeader);
+    boxHeader.toFront();
 
-    this.boxHeader.toFront();
+    const dragEventHandler = new OperatorEventHandler(this);
 
-    this.dragEventHandler = new OperatorEventHandler(this);
-    this.box.drag(this.dragEventHandler.getDraggingEventHandler(), this.dragEventHandler.getDragStartEventHandler());
+    box.drag(dragEventHandler.getDraggingHandler(),
+      dragEventHandler.getDragStartHandler(),
+      dragEventHandler.getDragFinishHandler());
+
+    this.box = box;
+    this.boxHeader = boxHeader;
+    this.dragEventHandler = dragEventHandler;
   }
   addPort(type) {
-    let [boxX, boxY] = [this.box.attr('x'), this.box.attr('y')];
+    const [boxX, boxY] = [this.box.attr('x'), this.box.attr('y')];
 
     if (type === PortType.output) {
-      let currNumOfOutputPorts = this.outputPorts.length;
+      const currNumOfOutputPorts = this.outputPorts.length;
 
       this.box.attr('height', rectHeight + (circleOffset * currNumOfOutputPorts));
 
-      let portX = outputCirclePlacementRules.x(boxX);
-      let portY = outputCirclePlacementRules.y(boxY, currNumOfOutputPorts);
+      const portX = outputCirclePlacementRules.x(boxX);
+      const portY = outputCirclePlacementRules.y(boxY, currNumOfOutputPorts);
 
-      let port = new Port(this.paper, portX, portY, circleRadius, type);
+      const port = new Port(this.paper, portX, portY, circleRadius, type);
       setOidForElement(port);
       port.circle.toBack();
 
@@ -99,12 +105,14 @@ export default class Operator {
         return;
       }
 
-      let portX = inputCirclePlacementRules.x(boxX);
-      let portY = inputCirclePlacementRules.y(boxY);
+      const portX = inputCirclePlacementRules.x(boxX);
+      const portY = inputCirclePlacementRules.y(boxY);
 
-      this.inputPort = new Port(this.paper, portX, portY, circleRadius, type);
-      setOidForElement(this.inputPort);
-      this.inputPort.circle.toBack();
+      const inputPort = new Port(this.paper, portX, portY, circleRadius, type);
+      setOidForElement(inputPort);
+      inputPort.circle.toBack();
+
+      this.inputPort = inputPort;
     } else {
       throw new Error('No such port type');
     }
@@ -112,7 +120,7 @@ export default class Operator {
     return this;
   }
   getOutputPort(index) {
-    let outputPort = this.outputPorts[index];
+    const outputPort = this.outputPorts[index];
     if (outputPort) {
       return {
         oid: outputPort.circle.oid,
