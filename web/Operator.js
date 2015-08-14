@@ -164,4 +164,23 @@ export default class Operator {
       outputPorts
     };
   }
+  get oid() {
+    return this._oid;
+  }
+  set oid(oid) {
+    this._oid = oid;
+  }
+  get x() {
+    return this._x;
+  }
+  set x(x) {
+    this._x = x;
+  }
+  get y() {
+    return this._y;
+  }
+  set y(y) {
+    this._y = y;
+  }
+
 }

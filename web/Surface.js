@@ -18,7 +18,23 @@ export default class Surface {
 
   }
   exportAsJson() {
+    const operatorInfoObjects = this.operators.map(op => op.createPositionInfoObject());
+    const pathConnections = Object.keys(this.paths.connections).map(k => {
+      const connection = this.paths.connections[k];
+      return {
+        oid: k,
+        x: connection.x,
+        y: connection.y,
+        to: connection.to
+      };
+    });
 
+    const root = {
+      operators: operatorInfoObjects,
+      connections: pathConnections
+    };
+
+    console.log(JSON.stringify(root));
   }
   buildDummy() {
     let operator0 = new Operator(this.paper, 50, 200, 'Zapp')

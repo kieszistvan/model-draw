@@ -57,10 +57,8 @@ export default class Paths {
 
     let createConnection = function createConnection(from, to, line) {
       connections[from.oid] = {
-        from: {
-          x: from.x,
-          y: from.y
-        },
+        x: from.x,
+        y: from.y,
         to: to,
         line: line
       };
